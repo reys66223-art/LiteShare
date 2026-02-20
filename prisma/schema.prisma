@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id // Clerk user ID
+  email     String   @unique
+  name      String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  files     File[]
+}
+
+model File {
+  id            String   @id @default(cuid()) // Unique hash URL (e.g., "a1b2c3d4")
+  name          String
+  size          Int      // File size in bytes
+  type          String   // MIME type
+  uploadDate    DateTime @default(now())
+  downloadCount Int      @default(0)
+  expiresAt     DateTime? // Auto-expiration date (48 hours for auth, 24 hours for guest)
+  uploadThingId String   @unique // UploadThing file ID
+  uploadThingUrl String  // UploadThing file URL
+  userId        String?  // Clerk user ID (null for guest uploads)
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isGuest       Boolean  @default(false) // Whether uploaded by guest
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([id])
+}
