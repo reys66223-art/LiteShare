@@ -41,6 +41,17 @@ export async function GET(
       );
     }
 
+    const { userId: clerkUserId } = await auth();
+    const cookieStore = await cookies();
+    const guestId = cookieStore.get("guestId")?.value;
+
+    let isOwner = false;
+    if (clerkUserId && file.userId === clerkUserId) {
+      isOwner = true;
+    } else if (!clerkUserId && file.isGuest && file.guestId && guestId === file.guestId) {
+      isOwner = true;
+    }
+
     return NextResponse.json({
       id: file.id,
       name: file.name,
@@ -52,6 +63,7 @@ export async function GET(
       uploadThingUrl: file.uploadThingUrl,
       isGuest: file.isGuest,
       user: file.user,
+      isOwner,
     });
   } catch (error) {
     console.error("Error fetching file:", error);
@@ -137,8 +149,8 @@ export async function DELETE(
     }
 
     if (!isAuthorized) {
-      return NextResponse.json({ 
-        error: "Unauthorized - You can only delete your own files. Each device/browser can only delete files they uploaded." 
+      return NextResponse.json({
+        error: "Unauthorized - You can only delete your own files. Each device/browser can only delete files they uploaded."
       }, { status: 401 });
     }
 
@@ -159,7 +171,7 @@ export async function DELETE(
       where: { id: fileId },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message: "File deleted successfully"
     });

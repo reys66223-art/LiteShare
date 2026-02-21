@@ -35,6 +35,7 @@ interface FileData {
     name: string | null;
     imageUrl: string | null;
   } | null;
+  isOwner?: boolean;
 }
 
 export default function FilePage({ params }: { params: Promise<{ fileId: string }> }) {
@@ -93,7 +94,7 @@ export default function FilePage({ params }: { params: Promise<{ fileId: string 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       toast.success('Download started');
     }
   };
@@ -152,10 +153,10 @@ export default function FilePage({ params }: { params: Promise<{ fileId: string 
     // Get the subtype (e.g., "pdf" from "application/pdf")
     const subtype = type.split('/')[1];
     if (!subtype) return type;
-    
+
     // Clean up and format common types
     const cleanType = subtype.replace('x-', '').toUpperCase();
-    
+
     // Special cases for better display
     if (cleanType.includes('JPEG') || cleanType.includes('JPG')) return 'JPG';
     if (cleanType.includes('PNG')) return 'PNG';
@@ -176,7 +177,7 @@ export default function FilePage({ params }: { params: Promise<{ fileId: string 
     if (cleanType.includes('JSON')) return 'JSON';
     if (cleanType.includes('XML')) return 'XML';
     if (cleanType.includes('CSV')) return 'CSV';
-    
+
     return cleanType;
   };
 
@@ -261,9 +262,9 @@ export default function FilePage({ params }: { params: Promise<{ fileId: string 
             </h1>
             <div className="flex items-center gap-2 mt-2">
               {file.user?.imageUrl ? (
-                <img 
-                  src={file.user.imageUrl} 
-                  alt="Uploader" 
+                <img
+                  src={file.user.imageUrl}
+                  alt="Uploader"
                   className="w-6 h-6 rounded-full"
                 />
               ) : (
@@ -321,12 +322,7 @@ export default function FilePage({ params }: { params: Promise<{ fileId: string 
             {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
             {copied ? 'Copied!' : 'Copy Link'}
           </Button>
-          {/* Show delete button if:
-              1. User is authenticated and owns the file, OR
-              2. User is guest and the file was uploaded by this guest (guestId matches)
-          */}
-          {(user && file.user && user.id === file.user.id) || 
-           (!user && file.isGuest) ? (
+          {file.isOwner ? (
             <Button
               variant="outline"
               size="lg"
