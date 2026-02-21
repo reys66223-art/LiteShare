@@ -336,8 +336,9 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             </div>
 
             {!isSignedIn && (
-              <p className="text-xs text-muted-foreground pt-1">
-                💡 Sign in for higher limits: {AUTH_LIMITS.maxFileSize} max, {AUTH_LIMITS.maxFileCount} files, {formatBytes(AUTH_LIMITS.hourlyBytes)}/day
+              <p className="text-xs text-muted-foreground pt-2 border-t mt-2 flex items-center gap-1.5">
+                <span className="text-primary">💡</span>
+                <span>Masuk untuk batas lebih besar: <b>{AUTH_LIMITS.maxFileSize}</b>/file, <b>{AUTH_LIMITS.maxFileCount}</b> file, dan <b>512MB</b>/hari.</span>
               </p>
             )}
           </div>
