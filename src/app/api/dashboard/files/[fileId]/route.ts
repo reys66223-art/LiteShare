@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { UTApi } from "uploadthing/server";
 
 export async function DELETE(
   req: Request,
@@ -28,7 +29,19 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Delete from database (UploadThing file will remain but be inaccessible)
+    // Initialize UploadThing API
+    const utapi = new UTApi();
+
+    try {
+      // Delete from UploadThing
+      await utapi.deleteFiles(file.uploadThingId);
+      console.log(`Deleted file from UploadThing: ${file.uploadThingId}`);
+    } catch (uploadError) {
+      console.error("Error deleting from UploadThing:", uploadError);
+      // Continue with database deletion even if UploadThing fails
+    }
+
+    // Delete from database
     await prisma.file.delete({
       where: { id: fileId },
     });

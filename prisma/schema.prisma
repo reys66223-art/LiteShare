@@ -31,9 +31,11 @@ model File {
   userId        String?  // Clerk user ID (null for guest uploads)
   user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   isGuest       Boolean  @default(false) // Whether uploaded by guest
+  guestId       String?  // Guest user ID (for tracking guest uploads per device)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([userId])
   @@index([id])
+  @@index([guestId])
 }

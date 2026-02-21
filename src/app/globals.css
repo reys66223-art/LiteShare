@@ -101,13 +101,152 @@
 
 /* --- CLERK CLEAN DESIGN OVERRIDES --- */
 
-/* Hide Clerk Branding & Development Mode */
+/* Hide Clerk Branding & Development Mode - Comprehensive selectors */
 .cl-internal-1dauvpw,
 .cl-internal-pe6vm4,
 .cl-internal-1k7jtru,
+.cl-internal-y44tp9,
+.cl-internal-9nc69y,
+.cl-internal-1scq7x4,
+.cl-internal-1scxde7,
+.cl-internal-5ghyhf,
+.cl-internal-l2l775,
 [aria-label="Clerk logo"],
-.cl-internal-1fpq5at {
+.cl-internal-1fpq5at,
+[class*="cl-internal"][aria-label*="Clerk"],
+.cl-footer,
+.cl-internal-footer,
+[class*="footer"],
+.cl-powerBy,
+.cl-internal-powerBy,
+[class*="powered"] {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Remove padding/margin from parent containers that held the hidden elements */
+.cl-internal-pe6vm4:empty,
+.cl-internal-l2l775:empty {
+  display: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 0 !important;
+}
+
+/* User Button Popover - Compact & Clean */
+.cl-userButtonPopoverCard {
+  min-width: 200px !important;
+  max-width: 280px !important;
+  padding: 8px !important;
+}
+
+.cl-userButtonPopoverMain {
+  gap: 8px !important;
+  padding: 4px !important;
+}
+
+.cl-userPreview {
+  gap: 10px !important;
+  padding: 4px 0 !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+}
+
+.cl-userPreviewAvatarContainer {
+  flex-shrink: 0 !important;
+  margin-right: 0 !important;
+}
+
+.cl-avatarBox {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+}
+
+.cl-userPreviewTextContainer {
+  min-width: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.cl-userPreviewMainIdentifier,
+.cl-userPreviewMainIdentifierText {
+  font-size: 0.875rem !important;
+  line-height: 1.2 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: block !important;
+}
+
+.cl-userPreviewSecondaryIdentifier {
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: block !important;
+  text-align: left !important;
+}
+
+.cl-userButtonPopoverActions {
+  gap: 4px !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+}
+
+.cl-userButtonPopoverActionButton {
+  height: 32px !important;
+  padding: 0 8px !important;
+  font-size: 0.8125rem !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+}
+
+.cl-userButtonPopoverActionButtonIconBox {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.cl-userButtonPopoverActionButtonIcon {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.cl-userButtonPopoverFooter {
+  padding: 8px !important;
+  margin-top: 4px !important;
+}
+
+/* Make clock icons more visible */
+.lucide-clock,
+[class*="lucide-clock"] {
+  opacity: 1 !important;
+  color: inherit !important;
+  stroke-width: 2.5 !important;
+}
+
+/* Ensure all lucide icons have consistent visibility */
+.lucide,
+[class^="lucide-"],
+[class*=" lucide-"] {
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* Improve icon visibility in file metadata */
+.text-muted-foreground .lucide,
+.text-muted-foreground [class*="lucide-"] {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 0.9 !important;
 }
 
 /* Hide "Optional" hint */

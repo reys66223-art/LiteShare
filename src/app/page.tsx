@@ -44,7 +44,7 @@ export default function Home() {
         </h1>
 
         <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
-          Upload any file up to 100MB and share it with a unique link.
+          Upload any file up to 64MB and share it with a unique link.
           No account required. Files auto-expire after 24-48 hours.
         </p>
 
@@ -67,22 +67,12 @@ export default function Home() {
             <span>Sign In for More</span>
           </div>
         </div>
-
-        {/* Upload Limits Info */}
-        <div className="max-w-xl mx-auto mb-8 p-4 rounded-lg bg-muted/50 border">
-          <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Guest:</strong> 16MB max, 2 files, 24h storage | 
-            <strong className="text-foreground ml-2">Sign In:</strong> 64MB max, 8 files, 48h storage
-          </p>
-        </div>
       </section>
 
       {/* Upload Section */}
       <section className="max-w-2xl mx-auto mb-16">
         <UploadZone />
       </section>
-
-      {/* Recent Files Section */}
       <section className="max-w-4xl mx-auto">
         <FileList 
           files={recentFiles} 

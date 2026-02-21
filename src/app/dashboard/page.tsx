@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUser, SignInButton, SignOutButton } from '@clerk/nextjs';
-import { File, Download, Trash2, Clock, HardDrive, Copy, Check, ExternalLink, AlertTriangle, LogOut, UserX } from 'lucide-react';
+import { File, Download, Trash2, Clock, HardDrive, Copy, Check, ExternalLink, AlertTriangle, LogOut, UserX, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -166,31 +166,33 @@ export default function DashboardPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-            <p className="text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Dashboard</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               {user
                 ? `Welcome back, ${user.firstName || user.emailAddresses[0]?.emailAddress}! Manage your uploaded files.`
                 : 'Sign in to manage your files and access higher upload limits.'}
             </p>
           </div>
           {user && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <SignOutButton>
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-2 w-full sm:w-auto justify-center">
                   <LogOut className="w-4 h-4" />
-                  Sign Out
+                  <span className="hidden sm:inline">Sign Out</span>
+                  <span className="sm:hidden">Out</span>
                 </Button>
               </SignOutButton>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowDeleteAccountDialog(true)}
-                className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 w-full sm:w-auto justify-center"
               >
                 <UserX className="w-4 h-4" />
-                Delete Account
+                <span className="hidden sm:inline">Delete Account</span>
+                <span className="sm:hidden">Delete</span>
               </Button>
             </div>
           )}
@@ -413,52 +415,68 @@ export default function DashboardPage() {
 
       {/* Delete Account Dialog */}
       <AlertDialog open={showDeleteAccountDialog} onOpenChange={setShowDeleteAccountDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-              <UserX className="w-5 h-5" />
+            <AlertDialogTitle className="flex items-center gap-3 text-destructive text-xl">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-destructive/10">
+                <UserX className="w-6 h-6" />
+              </div>
               Delete Account?
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              <div className="mt-2 space-y-3">
-                <div className="text-red-600 dark:text-red-400 font-semibold">
-                  ⚠️ This action is PERMANENT and CANNOT be undone!
-                </div>
-                <div className="space-y-2">
-                  <p>If you delete your account:</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>All your files will be permanently deleted</li>
-                    <li>Your user profile will be removed</li>
-                    <li>You will lose access to all uploaded content</li>
-                    <li>Your account cannot be recovered</li>
-                  </ul>
-                </div>
-                <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm text-amber-600 dark:text-amber-400">
-                  <p className="font-semibold">Warning:</p>
-                  <p>This will delete your account from both our platform and Clerk authentication system.</p>
-                </div>
-              </div>
-            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
+          <AlertDialogDescription className="space-y-4 pt-4">
+            <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
+              <p className="text-sm font-semibold text-destructive flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                This action is PERMANENT and CANNOT be undone!
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">If you delete your account:</p>
+              <ul className="space-y-2">
+                {[
+                  'All your files will be permanently deleted',
+                  'Your user profile will be removed',
+                  'You will lose access to all uploaded content',
+                  'Your account cannot be recovered',
+                ].map((item, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-destructive mt-1.5 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+              <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 mb-1">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Warning:
+              </p>
+              <p className="text-xs text-amber-600/80 dark:text-amber-400/80">
+                This will delete your account from both our platform and Clerk authentication system.
+              </p>
+            </div>
+          </AlertDialogDescription>
+          <AlertDialogFooter className="sm:justify-between gap-2 mt-6">
+            <AlertDialogCancel disabled={isDeletingAccount} className="sm:w-auto">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={deleteAccount}
               disabled={isDeletingAccount}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 sm:w-auto min-w-[140px]"
             >
               {isDeletingAccount ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Deleting Account...
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
                 </>
               ) : (
                 <>
                   <UserX className="w-4 h-4 mr-2" />
-                  Delete My Account
+                  Delete Account
                 </>
               )}
             </AlertDialogAction>

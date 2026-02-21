@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
     const { userId: clerkUserId } = await auth();
+    const cookieStore = await cookies();
+    
+    // Get guest ID from cookie (for guest uploads)
+    const guestId = cookieStore.get("guestId")?.value;
 
     const body = await req.json();
     const { fileName, fileSize, fileType, uploadThingId, uploadThingUrl, isGuest } = body;
@@ -21,9 +26,9 @@ export async function POST(req: Request) {
     // Determine if this is a guest upload
     const isGuestUpload = isGuest || !clerkUserId;
 
-    // Set expiration: 24 hours for guests, 48 hours for authenticated users
+    // Set expiration: 24 hours for guests, 72 hours (3 days) for authenticated users
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + (isGuestUpload ? 24 : 48));
+    expiresAt.setHours(expiresAt.getHours() + (isGuestUpload ? 24 : 72));
 
     // Create or update user record FIRST if authenticated (before creating file)
     let userId: string | null = null;
@@ -32,9 +37,9 @@ export async function POST(req: Request) {
       // Fetch complete user info from Clerk
       const client = await clerkClient();
       const clerkUser = await client.users.getUser(clerkUserId);
-      
+
       const email = clerkUser.primaryEmailAddress?.emailAddress || '';
-      const name = clerkUser.firstName 
+      const name = clerkUser.firstName
         ? `${clerkUser.firstName}${clerkUser.lastName ? ` ${clerkUser.lastName}` : ''}`
         : clerkUser.username || email.split('@')[0] || 'Anonymous';
       const imageUrl = clerkUser.imageUrl || '';
@@ -67,6 +72,7 @@ export async function POST(req: Request) {
       type: fileType,
       uploadThingId,
       userId: userId,
+      guestId: isGuestUpload ? guestId : null,
       isGuest: isGuestUpload,
     });
 
@@ -78,6 +84,7 @@ export async function POST(req: Request) {
         uploadThingId,
         uploadThingUrl,
         userId: userId, // null for guest uploads
+        guestId: isGuestUpload ? guestId : null, // Store guest ID for guest uploads
         isGuest: isGuestUpload,
         expiresAt,
       },

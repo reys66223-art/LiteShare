@@ -28,6 +28,7 @@ interface FileData {
   downloadCount: number;
   expiresAt: string | null;
   uploadThingUrl: string;
+  isGuest: boolean;
   user: {
     id: string;
     email: string;
@@ -108,7 +109,8 @@ export default function FilePage({ params }: { params: Promise<{ fileId: string 
   const deleteFile = async () => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/dashboard/files/${fileId}`, {
+      // Use the new unified delete endpoint that supports both auth and guest
+      const response = await fetch(`/api/files/${fileId}`, {
         method: 'DELETE',
       });
 
@@ -319,17 +321,23 @@ export default function FilePage({ params }: { params: Promise<{ fileId: string 
             {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
             {copied ? 'Copied!' : 'Copy Link'}
           </Button>
-          {user && file.user && user.id === file.user.id && (
+          {/* Show delete button if:
+              1. User is authenticated and owns the file, OR
+              2. User is guest and the file was uploaded by this guest (guestId matches)
+          */}
+          {(user && file.user && user.id === file.user.id) || 
+           (!user && file.isGuest) ? (
             <Button
               variant="outline"
               size="lg"
               onClick={() => setShowDeleteDialog(true)}
               className="gap-2 text-destructive hover:text-destructive"
+              title={!user ? "Only the person who uploaded this file can delete it" : undefined}
             >
               <Trash2 className="w-5 h-5" />
               Delete
             </Button>
-          )}
+          ) : null}
         </div>
 
         {/* Delete Confirmation Dialog */}

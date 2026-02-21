@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
+import { UTApi } from "uploadthing/server";
 
+/**
+ * GET /api/files/[fileId]
+ * Get file details
+ */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ fileId: string }> }
@@ -55,7 +62,10 @@ export async function GET(
   }
 }
 
-// Increment download count
+/**
+ * POST /api/files/[fileId]
+ * Increment download count
+ */
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ fileId: string }> }
@@ -79,6 +89,84 @@ export async function POST(
     console.error("Error incrementing download count:", error);
     return NextResponse.json(
       { error: "Failed to update download count" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/files/[fileId]
+ * Delete a file (supports both authenticated users and guests)
+ */
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ fileId: string }> }
+) {
+  try {
+    const { userId: clerkUserId } = await auth();
+    const cookieStore = await cookies();
+
+    // Get guest ID from cookie
+    const guestId = cookieStore.get("guestId")?.value;
+
+    const { fileId } = await params;
+
+    // Verify the file exists
+    const file = await prisma.file.findUnique({
+      where: { id: fileId },
+      include: { user: true },
+    });
+
+    if (!file) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    // Check authorization
+    let isAuthorized = false;
+
+    // Check if user is authenticated and owns the file
+    if (clerkUserId && file.userId === clerkUserId) {
+      isAuthorized = true;
+    }
+
+    // Check if guest owns the file - compare guestId from cookie with stored guestId
+    if (!clerkUserId && file.isGuest && file.guestId && guestId) {
+      if (file.guestId === guestId) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json({ 
+        error: "Unauthorized - You can only delete your own files. Each device/browser can only delete files they uploaded." 
+      }, { status: 401 });
+    }
+
+    // Initialize UploadThing API
+    const utapi = new UTApi();
+
+    try {
+      // Delete from UploadThing
+      await utapi.deleteFiles(file.uploadThingId);
+      console.log(`Deleted file from UploadThing: ${file.uploadThingId}`);
+    } catch (uploadError) {
+      console.error("Error deleting from UploadThing:", uploadError);
+      // Continue with database deletion even if UploadThing fails
+    }
+
+    // Delete from database
+    await prisma.file.delete({
+      where: { id: fileId },
+    });
+
+    return NextResponse.json({ 
+      success: true,
+      message: "File deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    return NextResponse.json(
+      { error: "Failed to delete file", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

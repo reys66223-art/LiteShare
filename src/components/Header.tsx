@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UploadCloud, Grid, Sun, Moon, LayoutDashboard } from 'lucide-react';
+import { UploadCloud, Grid, Sun, Moon, LayoutDashboard, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -19,6 +19,7 @@ export function Header() {
   const pathname = usePathname();
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -46,6 +47,7 @@ export function Header() {
             </span>
           </Link>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -70,50 +72,158 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <SignedOut>
-            <SignInButton mode="modal">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <Button variant="default" size="sm">
-                Sign Up
-              </Button>
-            </SignUpButton>
-          </SignedOut>
+          {/* Mobile Menu Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </Button>
 
-          <SignedIn>
-            <Link href="/dashboard">
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-2">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button variant="default" size="sm">
+                  Sign Up
+                </Button>
+              </SignUpButton>
+            </SignedOut>
+
+            <SignedIn>
+              <Link href="/dashboard">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Dashboard"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                </Button>
+              </Link>
+              <div className="flex items-center">
+                <UserButton />
+              </div>
+            </SignedIn>
+
+            {mounted && (
               <Button
                 variant="ghost"
                 size="icon"
-                title="Dashboard"
+                onClick={toggleTheme}
+                title={isDark ? 'Light mode' : 'Dark mode'}
               >
-                <LayoutDashboard className="w-4 h-4" />
+                {isDark ? (
+                  <Sun className="w-4 h-4" />
+                ) : (
+                  <Moon className="w-4 h-4" />
+                )}
               </Button>
-            </Link>
-            <div className="flex items-center">
-              <UserButton />
-            </div>
-          </SignedIn>
-
-          {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              title={isDark ? 'Light mode' : 'Dark mode'}
-            >
-              {isDark ? (
-                <Sun className="w-4 h-4" />
-              ) : (
-                <Moon className="w-4 h-4" />
-              )}
-            </Button>
-          )}
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t bg-background">
+          <div className="container px-4 py-3 space-y-3">
+            {/* Navigation Links */}
+            <div className="grid grid-cols-2 gap-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Button
+                      variant={isActive ? 'secondary' : 'outline'}
+                      size="sm"
+                      className={cn(
+                        'w-full justify-center gap-2',
+                        isActive && 'bg-muted font-medium'
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Auth & Actions */}
+            <div className="pt-3 border-t space-y-2">
+              <SignedOut>
+                <div className="grid grid-cols-2 gap-2">
+                  <SignInButton mode="modal">
+                    <Button variant="outline" size="sm" className="w-full">
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button variant="default" size="sm" className="w-full">
+                      Sign Up
+                    </Button>
+                  </SignUpButton>
+                </div>
+              </SignedOut>
+
+              <SignedIn>
+                <Link href="/dashboard" className="block">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-center gap-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <div className="flex items-center justify-between px-3 py-2 bg-muted/50 rounded-lg">
+                  <span className="text-sm text-muted-foreground">Account</span>
+                  <UserButton />
+                </div>
+              </SignedIn>
+
+              {mounted && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center gap-2"
+                  onClick={toggleTheme}
+                >
+                  {isDark ? (
+                    <>
+                      <Sun className="w-4 h-4" />
+                      Light Mode
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-4 h-4" />
+                      Dark Mode
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
