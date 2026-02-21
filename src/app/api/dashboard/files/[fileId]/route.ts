@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { UTApi } from "uploadthing/server";
+import { releaseRateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { headers } from "next/headers";
 
 export async function DELETE(
   req: Request,
@@ -39,6 +41,19 @@ export async function DELETE(
     } catch (uploadError) {
       console.error("Error deleting from UploadThing:", uploadError);
       // Continue with database deletion even if UploadThing fails
+    }
+
+    // Release rate limit usage
+    try {
+      const headersList = await headers();
+      const ip = headersList.get("x-forwarded-for")?.split(",")[0] ||
+        headersList.get("x-real-ip") ||
+        "unknown";
+      const rateLimitKey = getRateLimitKey(userId, ip);
+      releaseRateLimit(rateLimitKey, file.size);
+      console.log(`Released rate limit for dashboard delete - ${rateLimitKey}: ${file.size} bytes`);
+    } catch (rateLimitError) {
+      console.error("Error releasing rate limit:", rateLimitError);
     }
 
     // Delete from database

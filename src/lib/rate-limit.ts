@@ -86,9 +86,9 @@ export function checkRateLimit(
 } {
   const config = getConfig(isAuthenticated);
   const now = Date.now();
-  
+
   let entry = rateLimitStore.get(key);
-  
+
   // If no entry or expired, create new one
   if (!entry || now - entry.firstAttempt > config.windowMs) {
     entry = {
@@ -97,12 +97,12 @@ export function checkRateLimit(
       totalBytes: 0,
     };
   }
-  
+
   const windowEnd = entry.firstAttempt + config.windowMs;
   const remaining = Math.max(0, config.maxRequests - entry.count);
   const remainingBytes = Math.max(0, config.maxBytes - entry.totalBytes);
   const resetAt = windowEnd;
-  
+
   // Check if this request would exceed limits
   if (entry.count >= config.maxRequests) {
     return {
@@ -116,7 +116,7 @@ export function checkRateLimit(
       reason: 'rate_limit_requests',
     };
   }
-  
+
   if (entry.totalBytes + fileSize > config.maxBytes) {
     return {
       success: false,
@@ -129,12 +129,12 @@ export function checkRateLimit(
       reason: 'rate_limit_bytes',
     };
   }
-  
+
   // Update the entry
   entry.count += 1;
   entry.totalBytes += fileSize;
   rateLimitStore.set(key, entry);
-  
+
   return {
     success: true,
     remaining: remaining - 1,
@@ -161,9 +161,9 @@ export function getRateLimitStatus(
 } {
   const config = getConfig(isAuthenticated);
   const now = Date.now();
-  
+
   let entry = rateLimitStore.get(key);
-  
+
   // If no entry or expired, return full limits
   if (!entry || now - entry.firstAttempt > config.windowMs) {
     return {
@@ -175,11 +175,11 @@ export function getRateLimitStatus(
       percentageUsed: 0,
     };
   }
-  
+
   const windowEnd = entry.firstAttempt + config.windowMs;
   const remaining = Math.max(0, config.maxRequests - entry.count);
   const remainingBytes = Math.max(0, config.maxBytes - entry.totalBytes);
-  
+
   return {
     remaining,
     resetAt: windowEnd,
@@ -195,6 +195,20 @@ export function getRateLimitStatus(
  */
 export function resetRateLimit(key: string): void {
   rateLimitStore.delete(key);
+}
+
+/**
+ * Release rate limit usage (called when file is deleted)
+ */
+export function releaseRateLimit(key: string, fileSize: number): void {
+  const entry = rateLimitStore.get(key);
+  if (entry) {
+    // Decrease count but not below 0
+    entry.count = Math.max(0, entry.count - 1);
+    // Decrease total bytes but not below 0
+    entry.totalBytes = Math.max(0, entry.totalBytes - fileSize);
+    rateLimitStore.set(key, entry);
+  }
 }
 
 /**
