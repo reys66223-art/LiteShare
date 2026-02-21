@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, File, X, CheckCircle2, AlertCircle, Link as LinkIcon, Loader2, Info } from 'lucide-react';
+import { UploadCloud, File, X, CheckCircle2, AlertCircle, Link as LinkIcon, Loader2, Info, Check } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -252,7 +252,20 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
   const copyLink = (fileId: string) => {
     const url = `${window.location.origin}/f/${fileId}`;
     navigator.clipboard.writeText(url);
+
+    // Update local state to show "Copied" for this file
+    setUploads(prev => prev.map(u =>
+      u.fileId === fileId ? { ...u, copied: true } : u
+    ));
+
     toast.success('Link copied to clipboard');
+
+    // Reset "Copied" state after 2 seconds
+    setTimeout(() => {
+      setUploads(prev => prev.map(u =>
+        u.fileId === fileId ? { ...u, copied: false } : u
+      ));
+    }, 2000);
   };
 
   const limits = isSignedIn ? AUTH_LIMITS : GUEST_LIMITS;
@@ -472,23 +485,37 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 gap-1 hover:bg-green-500/20 hover:border-green-500/50 transition-colors"
+                        className={cn(
+                          "h-8 gap-2 px-3 transition-all duration-300 relative overflow-hidden",
+                          upload.copied
+                            ? "bg-green-500/10 border-green-500/50 text-green-600 dark:text-green-400"
+                            : "hover:bg-primary/10 hover:border-primary/50 hover:text-primary active:scale-95"
+                        )}
                         onClick={() => copyLink(upload.fileId!)}
                       >
-                        <LinkIcon className="w-3 h-3" />
-                        <span className="hidden sm:inline">Copy Link</span>
+                        {upload.copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 animate-in zoom-in duration-300" />
+                            <span className="text-xs font-semibold">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <LinkIcon className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+                            <span className="hidden sm:inline text-xs font-medium">Copy Link</span>
+                          </>
+                        )}
                       </Button>
                     ) : upload.status === 'error' ? (
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 gap-1 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-red-600 dark:text-red-400"
+                        className="h-8 gap-1.5 px-3 hover:bg-red-500/10 hover:border-red-500/50 transition-all text-red-600 dark:text-red-400 active:scale-95"
                         onClick={() => {
                           setUploads(prev => prev.filter(u => u.fileName !== upload.fileName));
                         }}
                       >
-                        <X className="w-3 h-3" />
-                        <span className="hidden sm:inline">Dismiss</span>
+                        <X className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline text-xs font-medium">Dismiss</span>
                       </Button>
                     ) : (
                       <span className={cn(
@@ -518,12 +545,13 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                 )}
               </div>
 
-              {upload.status === 'completed' || upload.status === 'error' ? (
+              {upload.status === 'completed' ? (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="shrink-0 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                  className="shrink-0 h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-90"
                   onClick={() => removeUpload(upload.fileName)}
+                  title="Remove from list"
                 >
                   <X className="w-4 h-4" />
                 </Button>

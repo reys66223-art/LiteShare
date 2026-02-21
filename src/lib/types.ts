@@ -14,6 +14,7 @@ export interface UploadProgress {
   progress: number;
   status: 'pending' | 'uploading' | 'completed' | 'error';
   speed?: string;
+  copied?: boolean;
 }
 
 export interface DatabaseFile {
