@@ -149,14 +149,14 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       },
       onUploadError: (error) => {
         console.error('Upload error:', error);
-        
+
         // Parse error message for better display
         let errorMessage = 'Upload failed. Please try again.';
         let errorDescription: string | undefined;
-        
+
         if (error instanceof Error) {
           const errorStr = error.message;
-          
+
           // Check for rate limit errors
           if (errorStr.includes('Rate limit exceeded')) {
             errorMessage = 'Rate Limit Exceeded';
@@ -175,12 +175,12 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             errorDescription = 'Please sign in to upload larger files and more uploads.';
           }
         }
-        
+
         toast.error(errorMessage, {
           description: errorDescription,
           duration: 8000,
         });
-        
+
         setUploads(prev => prev.map(u =>
           u.status === 'uploading'
             ? { ...u, status: 'error' }
@@ -293,8 +293,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                   className={cn(
                     'absolute inset-y-0 left-0 rounded-full transition-all duration-300',
                     rateLimitStatus.uploadPercentageUsed > 90 ? 'bg-red-500' :
-                    rateLimitStatus.uploadPercentageUsed > 70 ? 'bg-amber-500' :
-                    'bg-green-500'
+                      rateLimitStatus.uploadPercentageUsed > 70 ? 'bg-amber-500' :
+                        'bg-green-500'
                   )}
                   style={{ width: `${rateLimitStatus.uploadPercentageUsed}%` }}
                 />
@@ -314,8 +314,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                   className={cn(
                     'absolute inset-y-0 left-0 rounded-full transition-all duration-300',
                     rateLimitStatus.storagePercentageUsed > 90 ? 'bg-red-500' :
-                    rateLimitStatus.storagePercentageUsed > 70 ? 'bg-amber-500' :
-                    'bg-blue-500'
+                      rateLimitStatus.storagePercentageUsed > 70 ? 'bg-amber-500' :
+                        'bg-blue-500'
                   )}
                   style={{ width: `${rateLimitStatus.storagePercentageUsed}%` }}
                 />
@@ -377,8 +377,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
               <span className={cn(
                 'flex h-2 w-2 rounded-full',
                 uploads.some(u => u.status === 'uploading') ? 'bg-blue-500 animate-pulse' :
-                uploads.some(u => u.status === 'error') ? 'bg-red-500' :
-                'bg-green-500'
+                  uploads.some(u => u.status === 'error') ? 'bg-red-500' :
+                    'bg-green-500'
               )} />
               Upload Progress
             </h3>
@@ -394,8 +394,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                 'transition-all duration-300 ease-in-out',
                 'hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20',
                 upload.status === 'completed' ? 'bg-green-500/5 border-green-500/30' :
-                upload.status === 'error' ? 'bg-red-500/5 border-red-500/30' :
-                'bg-gradient-to-br from-card to-muted/30 border-primary/20'
+                  upload.status === 'error' ? 'bg-red-500/5 border-red-500/30' :
+                    'bg-gradient-to-br from-card to-muted/30 border-primary/20'
               )}
             >
               <div className={cn(
@@ -403,8 +403,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                 'transition-all duration-500 ease-out',
                 'shadow-sm',
                 upload.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600 text-white scale-110' :
-                upload.status === 'error' ? 'bg-gradient-to-br from-red-500 to-red-600 text-white' :
-                'bg-gradient-to-br from-primary/20 to-primary/10 text-primary'
+                  upload.status === 'error' ? 'bg-gradient-to-br from-red-500 to-red-600 text-white' :
+                    'bg-gradient-to-br from-primary/20 to-primary/10 text-primary'
               )}>
                 {upload.status === 'completed' ? (
                   <CheckCircle2 className="w-6 h-6 animate-in zoom-in duration-300" />
@@ -522,7 +522,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="shrink-0 hover:bg-muted transition-colors opacity-0 group-hover:opacity-100"
+                  className="shrink-0 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                   onClick={() => removeUpload(upload.fileName)}
                 >
                   <X className="w-4 h-4" />
@@ -540,10 +540,10 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
 function parseSize(sizeStr: string): number {
   const match = sizeStr.match(/^(\d+)([KMGT]?B)$/);
   if (!match) return 0;
-  
+
   const value = parseInt(match[1]);
   const unit = match[2];
-  
+
   switch (unit) {
     case 'KB': return value * 1024;
     case 'MB': return value * 1024 * 1024;
