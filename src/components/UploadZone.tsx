@@ -83,17 +83,6 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       onClientUploadComplete: async (res) => {
         console.log('Upload completed:', res);
 
-        // Refresh rate limit status after upload
-        try {
-          const response = await fetch('/api/rate-limit');
-          if (response.ok) {
-            const data = await response.json();
-            setRateLimitStatus(data.data);
-          }
-        } catch (error) {
-          console.error('Error refreshing rate limit:', error);
-        }
-
         // Save file metadata to database for each uploaded file
         for (const file of res) {
           try {
@@ -145,6 +134,17 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             ));
             toast.error(`Failed to save metadata for ${file.name}`);
           }
+        }
+
+        // Refresh rate limit status after ALL metadata is saved
+        try {
+          const response = await fetch('/api/rate-limit');
+          if (response.ok) {
+            const data = await response.json();
+            setRateLimitStatus(data.data);
+          }
+        } catch (error) {
+          console.error('Error refreshing rate limit:', error);
         }
       },
       onUploadError: (error) => {
